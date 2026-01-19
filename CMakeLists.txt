@@ -19,6 +19,11 @@ find_package(OpenMP REQUIRED)
 find_package(TBB REQUIRED)
 find_package(absl)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(absl_FOUND FALSE)
+    message(STATUS "Debug mode: forcing std::unordered_map")
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JEMALLOC jemalloc)
 pkg_check_modules(MIMALLOC mimalloc)
