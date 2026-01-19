@@ -1,16 +1,18 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <string>
 #include "Utils.hpp"
 
 int main(int argc, char * argv[])
 {
-    if (argc != 3) {
-        std::cerr << "you need to specify the segmentation and the size map" << std::endl;
+    if (argc != 4) {
+        std::cerr << "you need to specify the segmentation, the size map and the size threshold" << std::endl;
         return -1;
     }
     auto seg = read_array<uint64_t>(argv[1]);
     auto size_array = read_array<std::pair<uint64_t, uint64_t> >(argv[2]);
+    uint64_t threshold = std::stoull(argv[3]);
 
     std::stable_sort(size_array.begin(), size_array.end(), [](auto & a, auto & b) {
         return a.first < b.first;
@@ -35,13 +37,13 @@ int main(int argc, char * argv[])
     }
 
     std::cerr << "create size_map" << std::endl;
-    std::transform(seg.begin(), seg.end(), std::back_inserter(size_map), [&size_dict, has_cleft, &cleft_segs](uint64_t segid) -> uint8_t {
+    std::transform(seg.begin(), seg.end(), std::back_inserter(size_map), [&size_dict, has_cleft, &cleft_segs, threshold](uint64_t segid) -> uint8_t {
         if (segid == 0){
             return 0;
         }
         auto size = size_dict[segid];
         if ((!has_cleft) or (cleft_segs.count(segid) != 0 and cleft_segs.at(segid) > 10)) {
-            if (size < 100000) {
+            if (size < threshold) {
                 return 255;
             } else {
                 return 0;
